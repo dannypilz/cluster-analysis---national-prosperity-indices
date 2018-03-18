@@ -1,12 +1,12 @@
-#Daten einlesen (deutsche csv-Datei)
+#read the german csv-file
 NWM <- read.csv2("D:/Nationale Wohlfahrtsmessung.csv")
 
-#Ränge zuweisen
+#ranks assign
 GiniRang<- rank(NWM$Gini.Index, na.last = "keep")
 BIPRang<- rank(NWM$BIP.Skaliert, na.last = "keep")
 HappinessRang<- rank(NWM$Happiness, na.last = "keep")
 
-#Spalten mit Rängen der Tabelle hinzuzufügen
+#add column with ranks to the dataset
 NWM<-cbind(NWM, GiniRang)
 NWM<-cbind(NWM, BIPRang)
 NWM<-cbind(NWM, HappinessRang)
@@ -14,61 +14,61 @@ NWM<-cbind(NWM, HappinessRang)
 #libraray laden
 library("cluster", lib.loc="C:/Program Files/R/R-3.2.2/library")
 
-#Data Frame für die Indizes erstellenohne Rang
+#data frame for indices without ranks
 cluster<-data.frame(NWM$Happiness,NWM$Gini.Index,NWM$BIP.Skaliert)
 
-#Data Frame für die Indizes erstellenmit Rang
+#data frame for indices with ranks
 clusterR<-data.frame(NWM$HappinessRang,NWM$GiniRang,NWM$BIPRang)
 
-#Erstellen einer Distanzmatrix (mit Euklidischer Distanz)ohne Rang
+#assign distance matrix (with euclidean distance) without ranks
 dist.euclid<-daisy(cluster,metric="euclidean",stand=TRUE)
 
-#Erstellen einer Distanzmatrix (mit Euklidischer Distanz)mit Rang
+#assign distance matrix (with euclidean distance) with ranks
 dist.euclidR<-daisy(clusterR,metric="euclidean",stand=TRUE)
 
-#Durchführen der hierachischen Clusteranalyse mit der Distanzmatrixohne Rang
+#hierarchical cluster analysis without ranks
 dendogramm<-hclust(dist.euclid,method="average")
 
-#Durchführen der hierachischen Clusteranalyse mit der Distanzmatrixmit Rang
+#hierarchical cluster analysis with ranks
 dendogrammR<-hclust(dist.euclidR,method="average")
 
 #Klassifizierung der Daten in 3 Clusterohne Rang
 cluster.hierarch_3<-cutree(dendogramm,k=3)
 
-#Klassifizierung der Daten in 3 Clustermit Rang  
+#classification in 3 cluster with ranks  
 cluster.hierarch_3R<-cutree(dendogramm,k=3)
 
-#Anfügen an die Tabelleohne Rang
+#add to the data frame (without ranks)
 NWM<-cbind(NWM, cluster.hierarch_3)
 
-#Anfügen an die Tabellemit Rang
+#add to the data frame (with ranks)
 NWM<-cbind(NWM, cluster.hierarch_3R)
 
-#Mittelwert der jeweiligen Cluster-Hilfstabelle für das auslöschen von NA Werten
+#mean of the cluster-help-tables for remove NA-value
 Hilfstabelle <-data.frame(NWM$BIP.Skaliert,NWM$cluster.hierarch_3) 
 Hilfstabelle<-na.omit(Hilfstabelle)	
 
-#Happiness
+#happiness index
 tapply(Hilfstabelle$NWM.Happiness,Hilfstabelle$NWM.cluster.hierarch_3,mean)
 
 tapply(Hilfstabelle$NWM.Happiness,Hilfstabelle$cluster.hierarch_3R,mean)
 
-#BIP Skaliert
+#GDP scaled
 tapply(Hilfstabelle$NWM.BIP.Skaliert,Hilfstabelle$NWM.cluster.hierarch_3,mean)
 
 tapply(Hilfstabelle$NWM.BIP.Skaliert,Hilfstabelle$cluster.hierarch_3R,mean)
 
-#Gini-Index
+#gini-index
 tapply(NWM$Gini.Index, cluster.hierarch_3, mean)
 
 tapply(NWM$Gini.Index, cluster.hierarch_3R, mean)
 
-#Anzahl der Länder in den jeweiligen Clustern
+#number of countries in each cluster
 table(cluster.hierarch_3)
 cluster.hierarch_3
 
 table(cluster.hierarch_3R)
 cluster.hierarch_3R
 
-#Plot für die Clusteranalyse ohne Rang 
+#plot for cluster analysis without ranks
 plot(dendogramm,xlab="Objekte",ylab="Distanzen",main="Dendogramm der Clusteranalyse (Average)")
